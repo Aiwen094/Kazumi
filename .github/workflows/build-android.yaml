@@ -27,7 +27,7 @@ jobs:
         run: |
           curl -sL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.5-stable.tar.xz" -o /tmp/flutter.tar.xz
           sudo tar xf /tmp/flutter.tar.xz -C /opt
-          sudo chmod -R a+r /opt/flutter
+          sudo chown -R $(whoami) /opt/flutter
         shell: bash
       
       - name: Add Flutter to PATH
@@ -36,7 +36,7 @@ jobs:
       
       - name: Accept Android licenses
         run: |
-          yes | /opt/flutter/bin/flutter config --android-sdk /usr/local/lib/android/sdk
+          /opt/flutter/bin/flutter config --android-sdk /usr/local/lib/android/sdk
           yes | /opt/flutter/bin/flutter doctor --android-licenses 2>&1 || true
         shell: bash
       
