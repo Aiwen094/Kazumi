@@ -15,20 +15,28 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           
-      - name: Set up Flutter 3.44.5
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2.16.0
+        id: flutter-action
         with:
-          flutter-version: '3.44.5'
-          channel: 'stable'
+          channel: stable
+          flutter-version-file: pubspec.yaml
           
       - name: Get Flutter dependencies
         run: flutter pub get
+        shell: bash
+        
+      - name: Remove build id (JNI workaround)
+        run: sed -i -e 's/-Wl,/-Wl,--build-id=none,/' ${{ steps.flutter-action.outputs.PUB-CACHE-PATH }}/hosted/pub.dev/jni-*/src/CMakeLists.txt
+        shell: bash
         
       - name: Build APK (split-per-abi)
         run: flutter build apk --split-per-abi
+        shell: bash
         
       - name: List output files
         run: ls -la build/app/outputs/flutter-apk/
+        shell: bash
         
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
