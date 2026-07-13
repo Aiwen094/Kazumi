@@ -15,21 +15,39 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      - name: Install Flutter via snap
+      - name: Cache Flutter SDK
+        id: cache-flutter
+        uses: actions/cache@v4
+        with:
+          path: /opt/flutter
+          key: flutter-3.44.5-x64
+      
+      - name: Install Flutter
+        if: steps.cache-flutter.outputs.cache-hit != 'true'
         run: |
-          sudo snap install flutter --classic
-          flutter config --android-sdk /usr/local/lib/android/sdk
-          echo "Flutter $(flutter --version | head -1)"
+          curl -sL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.5-stable.tar.xz" -o /tmp/flutter.tar.xz
+          sudo tar xf /tmp/flutter.tar.xz -C /opt
+          sudo chmod -R a+r /opt/flutter
+        shell: bash
+      
+      - name: Add Flutter to PATH
+        run: echo "/opt/flutter/bin" >> $GITHUB_PATH
+        shell: bash
+      
+      - name: Accept Android licenses
+        run: |
+          yes | /opt/flutter/bin/flutter config --android-sdk /usr/local/lib/android/sdk
+          yes | /opt/flutter/bin/flutter doctor --android-licenses 2>&1 || true
         shell: bash
       
       - name: Get Flutter dependencies
         run: flutter pub get
         shell: bash
-        
+      
       - name: Build APK (split-per-abi)
         run: flutter build apk --split-per-abi
         shell: bash
-        
+      
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
