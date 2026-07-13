@@ -3,9 +3,6 @@
 on:
   workflow_dispatch:
 
-env:
-  FLUTTER_VERSION: "3.44.5"
-
 jobs:
   build-android:
     runs-on: ubuntu-latest
@@ -18,18 +15,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      - name: Download & install Flutter
+      - name: Install Flutter via snap
         run: |
-          curl -sL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" -o /tmp/flutter.tar.xz
-          tar xf /tmp/flutter.tar.xz -C /opt
-          echo "/opt/flutter/bin" >> $GITHUB_PATH
+          sudo snap install flutter --classic
           flutter config --android-sdk /usr/local/lib/android/sdk
+          echo "Flutter $(flutter --version | head -1)"
         shell: bash
       
-      - name: Pre-cache Flutter artifacts
-        run: flutter precache
-        shell: bash
-        
       - name: Get Flutter dependencies
         run: flutter pub get
         shell: bash
